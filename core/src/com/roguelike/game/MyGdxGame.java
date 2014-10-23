@@ -14,8 +14,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -294,5 +296,69 @@ public class MyGdxGame extends ApplicationAdapter {
 //			map.getLayers().add(layer);
 //		}
 //	}
+	
+	class ClickCell implements TiledMapTile{
+
+		@Override
+		public int getId() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public void setId(int id) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public BlendMode getBlendMode() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public void setBlendMode(BlendMode blendMode) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public TextureRegion getTextureRegion() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public float getOffsetX() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public void setOffsetX(float offsetX) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public float getOffsetY() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public void setOffsetY(float offsetY) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public MapProperties getProperties() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	}
 	
 }
