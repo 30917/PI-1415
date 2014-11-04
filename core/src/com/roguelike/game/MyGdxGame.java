@@ -25,14 +25,15 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
 public class MyGdxGame extends ApplicationAdapter {
 	//SpriteBatch batch;
 	//Texture img;
-	private Texture dropImage;
-	private Texture bucketImage;
+	public static Texture dropImage;
+	public static Texture bucketImage;
 	private Sound dropSound;
 	private Music rainMusic;
 	private OrthographicCamera camera;
@@ -47,6 +48,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	
     private TiledMap tiledMap;
     private TiledMapRenderer tiledMapRenderer;
+    TiledMapStage stage;
 	
 	@Override
 	public void create () {
@@ -95,7 +97,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		tiledMap = new TiledMap();
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         
-        fillTileLayer(new Texture("pattern.png"), 20, 15, "testlayer");
+        //TileUtils.fillTileLayer(new Texture("pattern.png"), 20, 15, "testlayer", tiledMap);
+        
+        stage = new TiledMapStage(tiledMap);
+        Gdx.input.setInputProcessor(stage);
 		
 		//batch = new SpriteBatch();
 		//img = new Texture("badlogic.jpg");
@@ -114,6 +119,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
+        stage.draw();
+        
 		
 		// tell the SpriteBatch to render in the
 	    // coordinate system specified by the camera.
@@ -134,8 +141,8 @@ public class MyGdxGame extends ApplicationAdapter {
 			Vector3 touchPos = new Vector3();
 			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 			camera.unproject(touchPos);
-			//bucket.x = touchPos.x - 64 / 2;
-			camera.position.set(touchPos.x, touchPos.y, 0);
+			bucket.x = touchPos.x - 64 / 2;
+			//camera.position.set(touchPos.x, touchPos.y, 0);
 		}
 		
 		if(Gdx.input.isKeyPressed(Keys.LEFT)) 
@@ -199,166 +206,6 @@ public class MyGdxGame extends ApplicationAdapter {
 		raindrop.height = 14;
 		raindrops.add(raindrop);
 		lastDropTime = TimeUtils.nanoTime();
-	}
-	
-	private void fillTileLayer(Texture text, int w, int h, String name){
-		boolean visible = true;
-		float opacity = 1.0f;
-		
-		TextureRegion region = new TextureRegion(text);
-		
-		
-		
-		int tileWidth = region.getRegionWidth();
-		int tileHeight = region.getRegionHeight();
-		
-		TiledMapTileLayer layer = new TiledMapTileLayer(w, h, tileWidth, tileHeight);
-		layer.setVisible(visible);
-		layer.setOpacity(opacity);
-		layer.setName(name);
-		for (int y = 0; y < h; y++) {
-			for (int x = 0; x < w; x++) {
-				int id = y * w + x;
-				boolean flipHorizontally = false;
-				boolean flipVertically = false;
-				boolean flipDiagonally = false;
-	
-				StaticTiledMapTile tile = new StaticTiledMapTile(new TextureRegion(text));
-				tile.setId(id);
-				
-				if (tile != null) {
-					Cell cell = createTileLayerCell(flipHorizontally, flipVertically, flipDiagonally);
-					cell.setTile(tile);
-					layer.setCell(x, h - 1 - y, cell);
-				}
-			}
-		}
-		tiledMap.getLayers().add(layer);
-	}
-	
-	private Cell createTileLayerCell (boolean flipHorizontally, boolean flipVertically, boolean flipDiagonally) {
-		Cell cell = new Cell();
-		if (flipDiagonally) {
-			if (flipHorizontally && flipVertically) {
-				cell.setFlipHorizontally(true);
-				cell.setRotation(Cell.ROTATE_270);
-			} else if (flipHorizontally) {
-				cell.setRotation(Cell.ROTATE_270);
-			} else if (flipVertically) {
-				cell.setRotation(Cell.ROTATE_90);
-			} else {
-				cell.setFlipVertically(true);
-				cell.setRotation(Cell.ROTATE_270);
-			}
-		} else {
-			cell.setFlipHorizontally(flipHorizontally);
-			cell.setFlipVertically(flipVertically);
-		}
-		return cell;
-	}
-	
-//	protected void loadTileLayer (TiledMap map, Element element) {
-//		if (element.getName().equals("layer")) {
-//			String name = element.getAttribute("name", null);
-//			int width = element.getIntAttribute("width", 0);
-//			int height = element.getIntAttribute("height", 0);
-//			int tileWidth = element.getParent().getIntAttribute("tilewidth", 0);
-//			int tileHeight = element.getParent().getIntAttribute("tileheight", 0);
-//			boolean visible = element.getIntAttribute("visible", 1) == 1;
-//			float opacity = element.getFloatAttribute("opacity", 1.0f);
-//			TiledMapTileLayer layer = new TiledMapTileLayer(width, height, tileWidth, tileHeight);
-//			layer.setVisible(visible);
-//			layer.setOpacity(opacity);
-//			layer.setName(name);
-//
-//			int[] ids = TmxMapHelper.getTileIds(element, width, height);
-//			TiledMapTileSets tilesets = map.getTileSets();
-//			for (int y = 0; y < height; y++) {
-//				for (int x = 0; x < width; x++) {
-//					int id = ids[y * width + x];
-//					boolean flipHorizontally = ((id & FLAG_FLIP_HORIZONTALLY) != 0);
-//					boolean flipVertically = ((id & FLAG_FLIP_VERTICALLY) != 0);
-//					boolean flipDiagonally = ((id & FLAG_FLIP_DIAGONALLY) != 0);
-//
-//					TiledMapTile tile = tilesets.getTile(id & ~MASK_CLEAR);
-//					if (tile != null) {
-//						Cell cell = createTileLayerCell(flipHorizontally, flipVertically, flipDiagonally);
-//						cell.setTile(tile);
-//						layer.setCell(x, height - 1 - y, cell);
-//					}
-//				}
-//			}
-//
-//			Element properties = element.getChildByName("properties");
-//			if (properties != null) {
-//				loadProperties(layer.getProperties(), properties);
-//			}
-//			map.getLayers().add(layer);
-//		}
-//	}
-	
-	class ClickCell implements TiledMapTile{
-
-		@Override
-		public int getId() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void setId(int id) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public BlendMode getBlendMode() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void setBlendMode(BlendMode blendMode) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public TextureRegion getTextureRegion() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public float getOffsetX() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void setOffsetX(float offsetX) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public float getOffsetY() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void setOffsetY(float offsetY) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public MapProperties getProperties() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
 	}
 	
 }
