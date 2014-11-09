@@ -1,7 +1,6 @@
 package com.roguelike.game;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -81,13 +80,14 @@ public final class TileUtils {
 	}
 	
 	
-	public static void importMap(String name, TiledMap tiledMap) throws IOException {
+	public static int[][] importMap(String name, TiledMap tiledMap) throws IOException {
 
 		FileHandle handler = Gdx.files.internal(name);
 		
 		BufferedReader reader = handler.reader(100);
 		String line = reader.readLine();
 		StringTokenizer st = new StringTokenizer(line);
+		String token="fail";
 		
 //		st.countTokens() e reader.mark() + reader.readLine()
 //		para conseguir o tamanho do mapa
@@ -96,8 +96,24 @@ public final class TileUtils {
 		
 		//TODO define textures
 		
-		Texture text = new Texture("pattern.png");
-		TextureRegion region = new TextureRegion(text);
+		TextureRegion region = new TextureRegion(MyGdxGame.text);
+		TextureRegion region2 = new TextureRegion(MyGdxGame.text2);
+		
+		TextureRegion down_left_right_up = new TextureRegion(MyGdxGame.down_left_right_up);
+		TextureRegion down_left_right = new TextureRegion(MyGdxGame.down_left_right);
+		TextureRegion down_left_up = new TextureRegion(MyGdxGame.down_left_up);
+		TextureRegion down_left = new TextureRegion(MyGdxGame.down_left);
+		TextureRegion down_right_up = new TextureRegion(MyGdxGame.down_right_up);
+		TextureRegion down_right = new TextureRegion(MyGdxGame.down_right);
+		TextureRegion down_up = new TextureRegion(MyGdxGame.down_up);
+		TextureRegion down = new TextureRegion(MyGdxGame.down);
+		TextureRegion left_right_up = new TextureRegion(MyGdxGame.left_right_up);
+		TextureRegion left_right = new TextureRegion(MyGdxGame.left_right);
+		TextureRegion left_up = new TextureRegion(MyGdxGame.left_up);
+		TextureRegion left = new TextureRegion(MyGdxGame.left);
+		TextureRegion right_up = new TextureRegion(MyGdxGame.right_up);
+		TextureRegion right = new TextureRegion(MyGdxGame.right);
+		TextureRegion up = new TextureRegion(MyGdxGame.up);
 		
 		
 		//map size
@@ -115,59 +131,86 @@ public final class TileUtils {
 		layer.setVisible(visible);
 		layer.setOpacity(opacity);
 		layer.setName(name);
-
-		try {
-			// ler as linhas
-			for (int linha = 0; (line = reader.readLine()) != null; linha++) {
-				st = new StringTokenizer(line);
-				for (int coluna=0; st.hasMoreTokens(); coluna++) {
-					String token = st.nextToken();
-					if (token.startsWith("(")) {
-//						StringTokenizer start_end = new StringTokenizer(token," (),");
-//						entry = list.getNode(
-//								Integer.parseInt(start_end.nextToken()),
-//								Integer.parseInt(start_end.nextToken()));
-//						entry.direction = "inicio";
-//						line = reader.readLine();
-//						start_end = new StringTokenizer(line, " (),");
-//						exit = list.getNode(
-//								Integer.parseInt(start_end.nextToken()),
-//								Integer.parseInt(start_end.nextToken()));
-						break;
-					}
-					//list.addNode(token.charAt(0));
-					
-					int id = linha * w + coluna;
-					boolean flipHorizontally = false;
-					boolean flipVertically = false;
-					boolean flipDiagonally = false;
 		
-					StaticTiledMapTile tile = new StaticTiledMapTile(new TextureRegion(text));
-					tile.setId(id);
-					
-					if (tile != null) {
-						Cell cell = TileUtils.createTileLayerCell(flipHorizontally, flipVertically, flipDiagonally);
-						cell.setTile(tile);
-						layer.setCell(coluna, h - 1 - linha, cell);
-					}
+		int[] entry = new int[2];
+		int[] exit = new int[2];
+		
+		// ler as linhas
+		for (int linha = 0; (line = reader.readLine()) != null; linha++) {
+			st = new StringTokenizer(line);
+			for (int coluna=0; st.hasMoreTokens(); coluna++) {
+				token = st.nextToken();
+				if (token.startsWith("(")) {
+					st = new StringTokenizer(token," (),");
+					entry[0] = Integer.parseInt(st.nextToken());
+					entry[1] = Integer.parseInt(st.nextToken());
+					line = reader.readLine();
+					st = new StringTokenizer(line, " (),");
+					exit[0] = Integer.parseInt(st.nextToken());
+					exit[1] = Integer.parseInt(st.nextToken());
+					break;
+				}
+				
+				//int id = Integer.parseInt(token);
+				boolean flipHorizontally = false;
+				boolean flipVertically = false;
+				boolean flipDiagonally = false;
+	
+				StaticTiledMapTile tile;
+				
+				if(token.equals("0"))
+					tile = new StaticTiledMapTile(region);
+				else if(token.equals("+"))
+					tile = new StaticTiledMapTile(down_left_right_up);
+				else if(token.equals("T"))
+					tile = new StaticTiledMapTile(down_left_right);
+				else if(token.equals("{"))
+					tile = new StaticTiledMapTile(down_left_up);
+				else if(token.equals("7"))
+					tile = new StaticTiledMapTile(down_left);
+				else if(token.equals("}"))
+					tile = new StaticTiledMapTile(down_right_up);
+				else if(token.equals("F"))
+					tile = new StaticTiledMapTile(down_right);
+				else if(token.equals("|"))
+					tile = new StaticTiledMapTile(down_up);
+				else if(token.equals("v"))
+					tile = new StaticTiledMapTile(down);
+				else if(token.equals("A"))
+					tile = new StaticTiledMapTile(left_right_up);
+				else if(token.equals("-"))
+					tile = new StaticTiledMapTile(left_right);
+				else if(token.equals("J"))
+					tile = new StaticTiledMapTile(left_up);
+				else if(token.equals("<"))
+					tile = new StaticTiledMapTile(left);
+				else if(token.equals("L"))
+					tile = new StaticTiledMapTile(right_up);
+				else if(token.equals(">"))
+					tile = new StaticTiledMapTile(right);
+				else if(token.equals("^"))
+					tile = new StaticTiledMapTile(up);
+				else
+					tile = new StaticTiledMapTile(region2);
+				//tile.setId(id);
+				
+				if (tile != null) {
+					Cell cell = TileUtils.createTileLayerCell(flipHorizontally, flipVertically, flipDiagonally);
+					cell.setTile(tile);
+					layer.setCell(coluna, h - 1 - linha, cell);
 				}
 			}
-			
+		}
+		
 //			Element properties = element.getChildByName("properties");
 //			if (properties != null) {
 //				loadProperties(layer.getProperties(), properties);
 //			}
-			tiledMap.getLayers().add(layer);
-			
-			
-
-		} catch (FileNotFoundException e) {	e.printStackTrace();
-		} catch (IOException e) {	e.printStackTrace();
-		} finally {
-			if (reader != null) {
-				try {	reader.close();
-				} catch (IOException e) {	e.printStackTrace();
-				}}}
+		tiledMap.getLayers().add(layer);
+		
+		int[][] doors = {entry,exit};
+		
+		return doors;
 	}	
 	
 

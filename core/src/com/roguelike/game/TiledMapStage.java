@@ -12,12 +12,19 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class TiledMapStage extends Stage {
 
-    private TiledMap tiledMap;
+    public TiledMap tiledMap;
+    
+    //should be inside TiledMap, so we can save several maps (must extend TiledMap)
+    public int[] entry;
+    public int[] exit;
 
-    public TiledMapStage(TiledMap tiledMap) {
+    public TiledMapStage(TiledMap tiledMap, Unit player) {
         this.tiledMap = tiledMap;
         
-        try {	TileUtils.importMap("maps/map1.txt",tiledMap);
+        
+        try {	int[][] doors = TileUtils.importMap("maps/map1.txt",tiledMap);
+        		entry = doors[0];
+        		exit = doors[1];
 		} catch (IOException e) {e.printStackTrace();}
 
         for (MapLayer layer : tiledMap.getLayers()) {
@@ -30,7 +37,7 @@ public class TiledMapStage extends Stage {
         for (int x = 0; x < tiledLayer.getWidth(); x++) {
             for (int y = 0; y < tiledLayer.getHeight(); y++) {
                 TiledMapTileLayer.Cell cell = tiledLayer.getCell(x, y);
-                TiledMapActor actor = new TiledMapActor(tiledMap, tiledLayer, cell, x, y);
+                TileActor actor = new TileActor(tiledMap, tiledLayer, cell, x, y);
                 actor.setBounds(x * tiledLayer.getTileWidth(), y * tiledLayer.getTileHeight(), tiledLayer.getTileWidth(),
                         tiledLayer.getTileHeight());
                 addActor(actor);
@@ -42,16 +49,16 @@ public class TiledMapStage extends Stage {
     
     public class TiledMapClickListener extends ClickListener {
 
-        private TiledMapActor actor;
+        private TileActor actor;
 
-        public TiledMapClickListener(TiledMapActor actor) {
+        public TiledMapClickListener(TileActor actor) {
             this.actor = actor;
         }
 
         @Override
         public void clicked(InputEvent event, float x, float y) {
         	actor.clicked(event, x, y);
-//            System.out.println(actor.cell + " has been clicked.");
+//TODO            System.out.println(actor.cell + " has been clicked.");
 //            actor.cell.getTile().getTextureRegion().setTexture(new Texture("pattern2.png"));
         }
     }

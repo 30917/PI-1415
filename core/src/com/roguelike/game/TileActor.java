@@ -6,7 +6,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 
-public class TiledMapActor extends Actor {
+public class TileActor extends Actor {
 
     private TiledMap tiledMap;
     private TiledMapTileLayer tiledLayer;
@@ -15,9 +15,9 @@ public class TiledMapActor extends Actor {
     private int x;
     private int y;
     
-    private Unit unit;
+    public Unit unit;
 
-    public TiledMapActor(TiledMap tiledMap, TiledMapTileLayer tiledLayer, 
+    public TileActor(TiledMap tiledMap, TiledMapTileLayer tiledLayer, 
     		TiledMapTileLayer.Cell cell, int x, int y) {
         this.tiledMap = tiledMap;
         this.tiledLayer = tiledLayer;

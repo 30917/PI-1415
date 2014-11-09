@@ -25,6 +25,7 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -34,6 +35,25 @@ public class MyGdxGame extends ApplicationAdapter {
 	//Texture img;
 	public static Texture dropImage;
 	public static Texture bucketImage;
+	public static Texture text;
+	public static Texture text2;
+	
+	public static Texture down_left_right_up;
+	public static Texture down_left_right;
+	public static Texture down_left_up;
+	public static Texture down_left;
+	public static Texture down_right_up;
+	public static Texture down_right;
+	public static Texture down_up;
+	public static Texture down;
+	public static Texture left_right_up;
+	public static Texture left_right;
+	public static Texture left_up;
+	public static Texture left;
+	public static Texture right_up;
+	public static Texture right;
+	public static Texture up;
+	
 	private Sound dropSound;
 	private Music rainMusic;
 	private OrthographicCamera camera;
@@ -49,6 +69,8 @@ public class MyGdxGame extends ApplicationAdapter {
     private TiledMap tiledMap;
     private TiledMapRenderer tiledMapRenderer;
     TiledMapStage stage;
+    
+    public Unit player;
 	
 	@Override
 	public void create () {
@@ -94,13 +116,43 @@ public class MyGdxGame extends ApplicationAdapter {
 		spawnRaindrop();
 		
 		
+		text = new Texture("pattern.png");
+		text2 = new Texture("pattern2.png");
+		
+		down_left_right_up = new Texture("tiles/down_left_right_up.png");
+		down_left_right = new Texture("tiles/down_left_right.png");
+		down_left_up = new Texture("tiles/down_left_up.png");
+		down_left = new Texture("tiles/down_left.png");
+		down_right_up = new Texture("tiles/down_right_up.png");
+		down_right = new Texture("tiles/down_right.png");
+		down_up = new Texture("tiles/down_up.png");
+		down = new Texture("tiles/down.png");
+		left_right_up = new Texture("tiles/left_right_up.png");
+		left_right = new Texture("tiles/left_right.png");
+		left_up = new Texture("tiles/left_up.png");
+		left = new Texture("tiles/left.png");
+		right_up = new Texture("tiles/right_up.png");
+		right = new Texture("tiles/right.png");
+		up = new Texture("tiles/up.png");
+		
 		tiledMap = new TiledMap();
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         
         //TileUtils.fillTileLayer(new Texture("pattern.png"), 20, 15, "testlayer", tiledMap);
+
+        player = new Unit(text2);
         
-        stage = new TiledMapStage(tiledMap);
+        stage = new TiledMapStage(tiledMap, player);
         Gdx.input.setInputProcessor(stage);
+        
+        //TiledMapTileLayer tileLayer = (TiledMapTileLayer) tiledMap.getLayers().get(0);
+        
+        TileActor start = (TileActor) stage.hit(stage.entry[0], stage.entry[1], true);
+        
+        player.tileActor = start;
+        
+        start.unit = player;
+        
 		
 		//batch = new SpriteBatch();
 		//img = new Texture("badlogic.jpg");
