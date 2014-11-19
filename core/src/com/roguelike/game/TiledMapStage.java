@@ -40,6 +40,7 @@ public class TiledMapStage extends Stage {
                 TileActor actor = new TileActor(tiledMap, tiledLayer, cell, x, y);
                 actor.setBounds(x * tiledLayer.getTileWidth(), y * tiledLayer.getTileHeight(), tiledLayer.getTileWidth(),
                         tiledLayer.getTileHeight());
+ //TODO               actor.setBounds(x * 32, y * 32, 32, 32);
                 addActor(actor);
                 EventListener eventListener = new TiledMapClickListener(actor);
                 actor.addListener(eventListener);
