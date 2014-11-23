@@ -117,7 +117,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		// tell the SpriteBatch to render in the
 	    // coordinate system specified by the camera.
-		batch.setProjectionMatrix(camera.combined);
+//		batch.setProjectionMatrix(camera.combined); //gives error
 		
 		
 		
@@ -125,11 +125,11 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		
 		// process user input
-		if(Gdx.input.isTouched()){
-			Vector3 touchPos = new Vector3();
-			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			camera.unproject(touchPos);
-		}
+//		if(Gdx.input.isTouched()){
+//			Vector3 touchPos = new Vector3();
+//			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+//			camera.unproject(touchPos);
+//		}
 		
 //		if(Gdx.input.isKeyPressed(Keys.LEFT)) 
 //			bucket.x -= 200 * Gdx.graphics.getDeltaTime();
