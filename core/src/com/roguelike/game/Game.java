@@ -9,25 +9,24 @@ import java.util.StringTokenizer;
 
 public class Game {
 	
-	//private static final int LEFT = 0;
+	public static final int DOWN = 0;
+	public static final int LEFT = 1;
+	public static final int RIGHT = 2;
+	public static final int UP = 3;
 	
 	public Player player;
-	
 	public BigMap bigmap;
-	
 	public Level level;
-	
 	
 	public Game(){
 		
 		this.player = new Player();
 		
 		this.bigmap = new BigMap();
-
-	}
-	public Game(String name){
 		
-		this.player = new Player();
+	}
+	
+	public Game(String name){
 		
 		this.bigmap = new BigMap();
 		
@@ -38,17 +37,15 @@ public class Game {
 			e.printStackTrace();
 		}
 		
+		this.player = new Player();
 		
 	}
 	
-	public void move(int x, int y){
-		int ax = player.position[0]+x;
-		int ay = player.position[1]+y;
-		if(ax>=0 && ax<5){
-			player.position[0] = ax;
-		}
-		if(ay>=0 && ay<5){
-			player.position[1] = ay;
+	public void move(int dir){
+		Place p = level.map[player.position[0]][player.position[1]];
+		if(p.links[dir] != null){
+			player.position[0] = p.links[dir].position[0];
+			player.position[1] = p.links[dir].position[1];
 		}
 		
 	}
@@ -63,9 +60,6 @@ public class Game {
 		}
 	}
 	
-	
-	
-	
 	public class BigMap{
 		Level[] levels;
 		int currentlevel;
@@ -77,78 +71,7 @@ public class Game {
 			this.currentlevel = 0;
 		}
 		
-	}
-	
-	public class Level{
-		Place[][] map;
-		int[] entry;
-		int[] exit;
-		
-		//TODO generate level
-		public Level(){
-			entry = new int[2];
-			exit = new int[2];
-			int size = 5;
-			this.map = new Place[size][size];
-			for(int i=0; i<size; i++)
-				for(int j=0; j<size; j++)
-					map[i][j] = new Place();
-		}
-		public Level(int h, int w){
-			entry = new int[2];
-			exit = new int[2];
-			this.map = new Place[h][w];
-			for(int i=0; i<h; i++){
-				for(int j=0; j<w; j++){
-					
-					map[i][j] = new Place();
-				}
-			}
-		}
-		
-	}
-	
-	public class Place{
-		Place left;
-		Place right;
-		Place up;
-		Place down;
-		
-		int[] position;
-		
-		boolean visible;
-		boolean seen;
-		
-		LinkedList<Unit> units;
-		LinkedList<Effect> effects;
-		//TODO save last seen state?
-		
-		public Place(){
-			
-			position = new int[2];
-			
-			visible = false;
-			seen = false;
-			this.units = new LinkedList<Game.Unit>();
-			this.effects = new LinkedList<Game.Effect>();
-		}
-	}
-	
-	public class Unit{
-		int[] position;
-		int hp;
-		int ap;
-		
-		public Unit(){
-			this.position = new int[2];
-			this.position[0] = 0;
-			this.position[1] = 0;
-			this.hp = 100;
-			this.ap = 10;	
-		}
-		
-	}
-	
+	}	
 	
 	public class Player extends Unit{
 		Effect[] powers;
@@ -156,14 +79,13 @@ public class Game {
 		
 		public Player(){
 			super();
+			this.position[0] = level.entry[0];
+			this.position[1] = level.entry[1];
 			this.powers = new Effect[3]; //TODO create effects/powers
 			this.viewrange = 1;
 		}
 	}
 	
-	public class Effect{
-		
-	}
 	
 	public Level importLevel(String name) throws IOException { //TODO make static?
 		
@@ -176,10 +98,10 @@ public class Game {
 		int w = Integer.parseInt(st.nextToken());
 		int h = Integer.parseInt(st.nextToken());
 		
-		boolean visible = true;
-		float opacity = 1.0f;
+//		boolean visible = true;
+//		float opacity = 1.0f;
 		
-		Level lv = new Level(h,w);
+		Level lv = new Level(w,h);
 		
 		// ler as linhas
 		for (int linha = h-1; (line = reader.readLine()) != null; linha--) {
@@ -199,88 +121,43 @@ public class Game {
 				
 				//int id = Integer.parseInt(token);
 	
-				Place tile = lv.map[linha][coluna];
-				tile.position[0] = linha;
-				tile.position[1] = coluna;
+				Place tile = lv.map[coluna][linha];
+				tile.position[0] = coluna;
+				tile.position[1] = linha;
 				tile.visible = true;
 				
 				if(token.equals("0")){
 
 				}else if(token.equals("+")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, true, true, true, true);	//down,left,right,up
 				}else if(token.equals("T")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-					
+					linkTile(tile, lv, true, true, true, false);
 				}else if(token.equals("{")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, true, true, false, true);
 				}else if(token.equals("7")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-
-
+					linkTile(tile, lv, true, true, false, false);
 				}else if(token.equals("}")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, true, false, true, true);
 				}else if(token.equals("F")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-
+					linkTile(tile, lv, true, false, true, false);
 				}else if(token.equals("|")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-
-
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, true, false, false, true);
 				}else if(token.equals("v")){
-					tile.down=lv.map[tile.position[0]-1][tile.position[1]];
-
-
-
+					linkTile(tile, lv, true, false, false, false);
 				}else if(token.equals("A")){
-
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, false, true, true, true);
 				}else if(token.equals("-")){
-
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-
+					linkTile(tile, lv, false, true, true, false);
 				}else if(token.equals("J")){
-
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, false, true, false, true);
 				}else if(token.equals("<")){
-
-					tile.left=lv.map[tile.position[0]][tile.position[1]-1];
-
-
+					linkTile(tile, lv, false, true, false, false);
 				}else if(token.equals("L")){
-
-
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, false, false, true, true);
 				}else if(token.equals(">")){
-
-
-					tile.right=lv.map[tile.position[0]][tile.position[1]+1];
-
+					linkTile(tile, lv, false, false, true, false);
 				}else if(token.equals("^")){
-
-
-
-					tile.up=lv.map[tile.position[0]+1][tile.position[1]];
+					linkTile(tile, lv, false, false, false, true);
 				}else
 					tile = new Place();	//TODO error handling
 				//tile.setId(id);
@@ -291,6 +168,33 @@ public class Game {
 		//tiledMap.getLayers().add(layer);
 		reader.close();
 		return lv;
-	}	
+	}
+	
+	public void linkTile(Place tile, Level lv, boolean a, boolean b, boolean c, boolean d){
+		if(a)
+			tile.links[DOWN]=lv.map[tile.position[0]][tile.position[1]-1];
+		if(b)
+			tile.links[LEFT]=lv.map[tile.position[0]-1][tile.position[1]];
+		if(c)
+			tile.links[RIGHT]=lv.map[tile.position[0]+1][tile.position[1]];
+		if(d)
+			tile.links[UP]=lv.map[tile.position[0]][tile.position[1]+1];
+	}
+	
+	public int getViewDistance(Place p){
+		int xdist = player.position[0] - p.position[0];
+		xdist = (xdist<0)? xdist*-1: xdist;
+		int ydist = player.position[1] - p.position[1];
+		ydist = (ydist<0)? ydist*-1: ydist;
+		return (xdist > ydist)? xdist: ydist;
+	}
+	
+	public LinkedList<Place> getPlacesAtViewDist(int d){
+		LinkedList<Place> l = new LinkedList<Place>();
+		
+		
+		
+		return l;
+	}
 	
 }

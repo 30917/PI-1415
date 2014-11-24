@@ -1,24 +1,16 @@
 package com.roguelike.game;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-
-public class Unit {
+public class Unit{
+	int[] position;
+	int hp;
+	int ap;
 	
-	public int hp;
-	public Texture text;
-	//public TextureRegion region;
-	public TileActor tileActor;
-	
-	public Unit(Texture t){
-		text = t;
-		tileActor = null;
+	public Unit(){
+		this.position = new int[2];
+		this.position[0] = 0;
+		this.position[1] = 0;
+		this.hp = 100;
+		this.ap = 10;	
 	}
 	
-	public void draw(Batch batch, float x, float y) {
-		//batch.draw(text, tileActor.getX(), tileActor.getY());
-		
-	}
-
 }

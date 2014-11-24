@@ -3,29 +3,21 @@ package com.roguelike.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.roguelike.game.Game.*;
 
 public class MyGdxGame extends ApplicationAdapter {
 	
-	public static Texture dropImage;
-	public static Texture bucketImage;
-	public static Texture text;
-	public static Texture text2;
-	
 	private OrthographicCamera camera;
 	private SpriteBatch batch;
-	
-	private BitmapFont font;
 	
 //    private TiledMap tiledMap;
 //    private TiledMapRenderer tiledMapRenderer;
@@ -33,27 +25,23 @@ public class MyGdxGame extends ApplicationAdapter {
 //    
 //    public Unit player;
 	
-    Game game;
-    
+    Game G;
+    Assets A;
     
 	@Override
 	public void create () {
 		
-		game = new Game(Gdx.files.getLocalStoragePath()+"bin/map1.txt");
+		G = new Game(Gdx.files.getLocalStoragePath()+"bin/map1.txt");
 		
+		A=new Assets();
 		
-		
-		font = new BitmapFont();
-        font.setColor(Color.RED);
-		dropImage = new Texture(Gdx.files.internal("droplet.png"));
-		bucketImage = new Texture(Gdx.files.internal("bucket.png"));
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
 		
 		batch = new SpriteBatch();
 		
-		text = new Texture(Gdx.files.internal("pattern.png"));
-		text2 = new Texture(Gdx.files.internal("pattern2.png"));
+//		text = new Texture(Gdx.files.internal("pattern.png"));
+//		text2 = new Texture(Gdx.files.internal("pattern2.png"));
 		
 //		tiledMap = new TiledMap();
 //        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
@@ -80,25 +68,28 @@ public class MyGdxGame extends ApplicationAdapter {
 		camera.update();
 		
 		batch.begin();
-		int sizey = game.level.map.length;
-		int sizex = game.level.map[0].length;
+		int sizex = G.level.map.length;
+		int sizey = G.level.map[0].length;
 		for(int y=0; y<sizey; y++){
 			for(int x=0; x<sizex; x++){
-				batch.draw(text, text.getWidth()*x, text.getHeight()*y);
+				Texture t = findTileText(G.level.map[x][y]);
+				batch.draw(t, t.getWidth()*x, t.getHeight()*y);
 			}
 		}
-		batch.draw(text2, text2.getWidth()*game.player.position[0], text2.getHeight()*game.player.position[1]);
+		batch.draw(A.text2, 
+				A.text2.getWidth()*G.player.position[0], 
+				A.text2.getHeight()*G.player.position[1]);
 		batch.end();
 		
 		
-		if(Gdx.input.isKeyJustPressed(Keys.LEFT)) 
-			game.move(-1,0);
-		if(Gdx.input.isKeyJustPressed(Keys.RIGHT)) 
-			game.move(1,0);
-		if(Gdx.input.isKeyJustPressed(Keys.UP)) 
-			game.move(0,1);
 		if(Gdx.input.isKeyJustPressed(Keys.DOWN)) 
-			game.move(0,-1);
+			G.move(Game.DOWN);
+		if(Gdx.input.isKeyJustPressed(Keys.LEFT)) 
+			G.move(Game.LEFT);
+		if(Gdx.input.isKeyJustPressed(Keys.RIGHT)) 
+			G.move(Game.RIGHT);
+		if(Gdx.input.isKeyJustPressed(Keys.UP)) 
+			G.move(Game.UP);
 		
 		
 //        tiledMapRenderer.setView(camera);
@@ -106,15 +97,54 @@ public class MyGdxGame extends ApplicationAdapter {
 //        stage.draw();
 	}
 	
+	public Texture findTileText(Place p){
+//		if(G.getViewDistance(p)>1){
+//			return A.text;
+//		}
+		if(p.links[Game.DOWN]!=null){
+			if(p.links[Game.LEFT]!=null){
+				if(p.links[Game.RIGHT]!=null){
+					if(p.links[Game.UP]!=null)
+						return A.down_left_right_up;
+					return A.down_left_right;
+				}
+				if(p.links[Game.UP]!=null)
+					return A.down_left_up;
+				return A.down_left;
+			}
+			if(p.links[Game.RIGHT]!=null){
+				if(p.links[Game.UP]!=null)
+					return A.down_right_up;
+				return A.down_right;
+			}
+			if(p.links[Game.UP]!=null)
+				return A.down_up;
+			return A.down;
+		}
+		if(p.links[Game.LEFT]!=null){
+			if(p.links[Game.RIGHT]!=null){
+				if(p.links[Game.UP]!=null)
+					return A.left_right_up;
+				return A.left_right;
+			}
+			if(p.links[Game.UP]!=null)
+				return A.left_up;
+			return A.left;
+		}
+		if(p.links[Game.RIGHT]!=null){
+			if(p.links[Game.UP]!=null)
+				return A.right_up;
+			return A.right;
+		}
+		if(p.links[Game.UP]!=null)
+			return A.up;
+		return A.text;
+	}
 	
 	@Override
 	public void dispose(){
-		dropImage.dispose();
-		bucketImage.dispose();
+		A.dispose();
 		batch.dispose();
-		font.dispose();
-		text.dispose();
-		text2.dispose();
 	}
 	
 }
