@@ -39,7 +39,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 		
-		game = new Game();
+		game = new Game(Gdx.files.getLocalStoragePath()+"bin/map1.txt");
 		
 		
 		
@@ -80,9 +80,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		camera.update();
 		
 		batch.begin();
-		int size = 5; //game.bigmap.levels[game.bigmap.currentlevel]. ...
-		for(int y=0; y<size; y++){
-			for(int x=0; x<size; x++){
+		int sizey = game.level.map.length;
+		int sizex = game.level.map[0].length;
+		for(int y=0; y<sizey; y++){
+			for(int x=0; x<sizex; x++){
 				batch.draw(text, text.getWidth()*x, text.getHeight()*y);
 			}
 		}
