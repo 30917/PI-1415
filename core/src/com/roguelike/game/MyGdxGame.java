@@ -31,7 +31,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 		
-		G = new Game(Gdx.files.getLocalStoragePath()+"bin/map1.txt");
+		//G = new Game(Gdx.files.getLocalStoragePath()+"bin/map1.txt");
+		G = new Game();
 		
 		A=new Assets();
 		

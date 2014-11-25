@@ -19,11 +19,11 @@ public class Game {
 	public Level level;
 	
 	public Game(){
-		
-		this.player = new Player();
-		
 		this.bigmap = new BigMap();
 		
+		this.level = Level.randomLevel();
+		
+		this.player = new Player();
 	}
 	
 	public Game(String name){
@@ -122,8 +122,6 @@ public class Game {
 				//int id = Integer.parseInt(token);
 	
 				Place tile = lv.map[coluna][linha];
-				tile.position[0] = coluna;
-				tile.position[1] = linha;
 				tile.visible = true;
 				
 				if(token.equals("0")){
@@ -170,7 +168,7 @@ public class Game {
 		return lv;
 	}
 	
-	public void linkTile(Place tile, Level lv, boolean a, boolean b, boolean c, boolean d){
+	public static void linkTile(Place tile, Level lv, boolean a, boolean b, boolean c, boolean d){
 		if(a)
 			tile.links[DOWN]=lv.map[tile.position[0]][tile.position[1]-1];
 		if(b)

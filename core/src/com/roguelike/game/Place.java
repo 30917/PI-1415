@@ -24,4 +24,10 @@ public class Place{
 		this.units = new LinkedList<Unit>();
 		this.effects = new LinkedList<Effect>();
 	}
+
+	public Place(int w, int h){
+		this();
+		this.position[0] = w;
+		this.position[1] = h;
+	}
 }
