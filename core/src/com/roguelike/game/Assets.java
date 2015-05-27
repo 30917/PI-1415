@@ -8,10 +8,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 public class Assets{
 	//SpriteBatch batch;
 	//Texture img;
+	public Texture dropImage_small;
 	public Texture dropImage;
 	public Texture bucketImage;
 	public Texture text;
 	public Texture text2;
+	public Texture dotclear;
 	
 	public Texture down_left_right_up;
 	public Texture down_left_right;
@@ -33,10 +35,12 @@ public class Assets{
 
 	public Assets() {
 		
+		dropImage_small = new Texture(Gdx.files.internal("droplet_small.png"));
 		dropImage = new Texture(Gdx.files.internal("droplet.png"));
 		bucketImage = new Texture(Gdx.files.internal("bucket.png"));
 		text = new Texture("pattern.png");
 		text2 = new Texture("pattern2.png");
+		dotclear = new Texture("dot_clear.png");
 		
 		down_left_right_up = new Texture("tiles/down_left_right_up.png");
 		down_left_right = new Texture("tiles/down_left_right.png");

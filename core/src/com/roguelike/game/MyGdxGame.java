@@ -19,20 +19,24 @@ public class MyGdxGame extends ApplicationAdapter {
 	private OrthographicCamera camera;
 	private SpriteBatch batch;
 	
-//    private TiledMap tiledMap;
-//    private TiledMapRenderer tiledMapRenderer;
 //    TiledMapStage stage;
-//    
-//    public Unit player;
 	
     Game G;
     Assets A;
     
+    boolean sav;
+    boolean load;
+    
 	@Override
 	public void create () {
 		
+		sav =true;
+		load = true;
 		//G = new Game(Gdx.files.getLocalStoragePath()+"bin/map1.txt");
-		G = new Game();
+		if(load)
+			G = Game.loadGame("cde.tmp");
+		else
+			G = new Game();
 		
 		A=new Assets();
 		
@@ -41,22 +45,12 @@ public class MyGdxGame extends ApplicationAdapter {
 		
 		batch = new SpriteBatch();
 		
-//		text = new Texture(Gdx.files.internal("pattern.png"));
-//		text2 = new Texture(Gdx.files.internal("pattern2.png"));
-		
-//		tiledMap = new TiledMap();
-//        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-//        
 //        //TileUtils.fillTileLayer(new Texture("pattern.png"), 20, 15, "testlayer", tiledMap);
 //        
 //        stage = new TiledMapStage(tiledMap, player);
 //        Gdx.input.setInputProcessor(stage);
 //        
 //        TileActor start = (TileActor) stage.hit(stage.entry[0], stage.entry[1], true);
-//        
-//        player.tileActor = start;
-//        
-//        start.unit = player;
         
 	}
 
@@ -73,13 +67,28 @@ public class MyGdxGame extends ApplicationAdapter {
 		int sizey = G.level.map[0].length;
 		for(int y=0; y<sizey; y++){
 			for(int x=0; x<sizex; x++){
-				Texture t = findTileText(G.level.map[x][y]);
+				Place p = G.level.map[x][y];
+				Texture t = findTileText(p);
 				batch.draw(t, t.getWidth()*x, t.getHeight()*y);
+				for(Obj o : p.obj){
+					batch.draw(A.dropImage_small, 
+							t.getWidth()*x+12, 
+							t.getHeight()*y+12);
+				}
+				//batch.draw(A.dotclear, t.getWidth()*x, t.getHeight()*y);
 			}
 		}
 		batch.draw(A.text2, 
 				A.text2.getWidth()*G.player.position[0], 
 				A.text2.getHeight()*G.player.position[1]);
+		
+		batch.draw(A.dotclear, 
+				A.dotclear.getWidth()*G.level.exit[0], 
+				A.dotclear.getHeight()*G.level.exit[1]);
+		
+		A.font.draw(batch, Integer.toString(G.player.hp),700,400);
+		A.font.draw(batch, Integer.toString(G.level.exit[0]),700,300);
+		A.font.draw(batch, Integer.toString(G.level.exit[1]),720,300);
 		batch.end();
 		
 		
@@ -92,9 +101,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		if(Gdx.input.isKeyJustPressed(Keys.UP)) 
 			G.move(Game.UP);
 		
-		
-//        tiledMapRenderer.setView(camera);
-//        tiledMapRenderer.render();
+
 //        stage.draw();
 	}
 	
@@ -144,6 +151,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	
 	@Override
 	public void dispose(){
+		if(sav)
+			Game.saveGame(G, "cde.tmp");
 		A.dispose();
 		batch.dispose();
 	}

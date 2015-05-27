@@ -1,13 +1,20 @@
 package com.roguelike.game;
 
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.LinkedList;
-import java.util.StringTokenizer;
 
-public class Game {
+public class Game implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5624055458025129729L;
 	
 	public static final int DOWN = 0;
 	public static final int LEFT = 1;
@@ -21,7 +28,7 @@ public class Game {
 	public Game(){
 		this.bigmap = new BigMap();
 		
-		this.level = Level.randomLevel();
+		this.level = bigmap.levels[bigmap.currentlevel];
 		
 		this.player = new Player();
 	}
@@ -31,7 +38,7 @@ public class Game {
 		this.bigmap = new BigMap();
 		
 		try {
-			this.level = importLevel(name);
+			this.level = level.importLevel(this, name);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -46,34 +53,80 @@ public class Game {
 		if(p.links[dir] != null){
 			player.position[0] = p.links[dir].position[0];
 			player.position[1] = p.links[dir].position[1];
+			p.links[dir].onTouch(player);
+			turn();
 		}
 		
+	}
+	
+	private void turn(){
+		if(player.position[0] == level.exit[0] && player.position[1] == level.exit[1]){
+			System.out.println("test");
+			bigmap.currentlevel = (bigmap.currentlevel+1) % bigmap.levels.length;
+			level = bigmap.levels[bigmap.currentlevel];
+			player.position[0] = level.entry[0];
+			player.position[1] = level.entry[1];
+		}
+		
+	}
+	
+	public static void saveGame(Game g, String file){
+		
+        // Serialize the original class object
+        try {
+            FileOutputStream fo = new FileOutputStream(file);
+            ObjectOutputStream so = new ObjectOutputStream(fo);
+            so.writeObject(g);
+            so.flush();
+            so.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+	}
+	
+	public static Game loadGame(String file){
+		Game gamenew = null;
+
+        // Deserialize in to new class object
+        try {
+            FileInputStream fi = new FileInputStream(file);
+            ObjectInputStream si = new ObjectInputStream(fi);
+            gamenew = (Game) si.readObject();
+            si.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return gamenew;
+		
+	}
+	
+	public static Game testsave(){
+		Game game = new Game();
+		
+		saveGame(game, "cde.tmp");
+		
+		Game gamenew = loadGame("cde.tmp");
+		
+        return gamenew;
 	}
 	
 	public static void main(String [] args){
 		Game game = new Game();
 		try {
-			game.level = game.importLevel("map1.txt");
+			game.level = game.level.importLevel(game, "map1.txt");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public class BigMap{
-		Level[] levels;
-		int currentlevel;
-		
-		public BigMap(){
-			//TODO generate map
-			this.levels = new Level[3];
-			
-			this.currentlevel = 0;
-		}
-		
-	}	
-	
 	public class Player extends Unit{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 115193941679906843L;
 		Effect[] powers;
 		int viewrange;
 		
@@ -86,98 +139,6 @@ public class Game {
 		}
 	}
 	
-	
-	public Level importLevel(String name) throws IOException { //TODO make static?
-		
-		BufferedReader reader = new BufferedReader(new FileReader(name));
-		String line = reader.readLine();
-		StringTokenizer st = new StringTokenizer(line);
-		String token="fail";
-		
-		//map size
-		int w = Integer.parseInt(st.nextToken());
-		int h = Integer.parseInt(st.nextToken());
-		
-//		boolean visible = true;
-//		float opacity = 1.0f;
-		
-		Level lv = new Level(w,h);
-		
-		// ler as linhas
-		for (int linha = h-1; (line = reader.readLine()) != null; linha--) {
-			st = new StringTokenizer(line);
-			for (int coluna=0; st.hasMoreTokens(); coluna++) {
-				token = st.nextToken();
-				if (token.startsWith("(")) {
-					st = new StringTokenizer(token," (),");
-					lv.entry[0] = Integer.parseInt(st.nextToken());
-					lv.entry[1] = Integer.parseInt(st.nextToken());
-					line = reader.readLine();
-					st = new StringTokenizer(line, " (),");
-					lv.exit[0] = Integer.parseInt(st.nextToken());
-					lv.exit[1] = Integer.parseInt(st.nextToken());
-					break;
-				}
-				
-				//int id = Integer.parseInt(token);
-	
-				Place tile = lv.map[coluna][linha];
-				tile.visible = true;
-				
-				if(token.equals("0")){
-
-				}else if(token.equals("+")){
-					linkTile(tile, lv, true, true, true, true);	//down,left,right,up
-				}else if(token.equals("T")){
-					linkTile(tile, lv, true, true, true, false);
-				}else if(token.equals("{")){
-					linkTile(tile, lv, true, true, false, true);
-				}else if(token.equals("7")){
-					linkTile(tile, lv, true, true, false, false);
-				}else if(token.equals("}")){
-					linkTile(tile, lv, true, false, true, true);
-				}else if(token.equals("F")){
-					linkTile(tile, lv, true, false, true, false);
-				}else if(token.equals("|")){
-					linkTile(tile, lv, true, false, false, true);
-				}else if(token.equals("v")){
-					linkTile(tile, lv, true, false, false, false);
-				}else if(token.equals("A")){
-					linkTile(tile, lv, false, true, true, true);
-				}else if(token.equals("-")){
-					linkTile(tile, lv, false, true, true, false);
-				}else if(token.equals("J")){
-					linkTile(tile, lv, false, true, false, true);
-				}else if(token.equals("<")){
-					linkTile(tile, lv, false, true, false, false);
-				}else if(token.equals("L")){
-					linkTile(tile, lv, false, false, true, true);
-				}else if(token.equals(">")){
-					linkTile(tile, lv, false, false, true, false);
-				}else if(token.equals("^")){
-					linkTile(tile, lv, false, false, false, true);
-				}else
-					tile = new Place();	//TODO error handling
-				//tile.setId(id);
-				
-			}
-		}
-		
-		//tiledMap.getLayers().add(layer);
-		reader.close();
-		return lv;
-	}
-	
-	public static void linkTile(Place tile, Level lv, boolean a, boolean b, boolean c, boolean d){
-		if(a)
-			tile.links[DOWN]=lv.map[tile.position[0]][tile.position[1]-1];
-		if(b)
-			tile.links[LEFT]=lv.map[tile.position[0]-1][tile.position[1]];
-		if(c)
-			tile.links[RIGHT]=lv.map[tile.position[0]+1][tile.position[1]];
-		if(d)
-			tile.links[UP]=lv.map[tile.position[0]][tile.position[1]+1];
-	}
 	
 	public int getViewDistance(Place p){
 		int xdist = player.position[0] - p.position[0];
