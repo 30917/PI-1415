@@ -14,6 +14,11 @@ public class Assets{
 	public Texture text;
 	public Texture text2;
 	public Texture dotclear;
+	public Texture red_unit;
+	public Texture power_green;
+	public Texture power_orange;
+	public Texture power_pink;
+	public Texture power_blue;
 	
 	public Texture down_left_right_up;
 	public Texture down_left_right;
@@ -41,6 +46,12 @@ public class Assets{
 		text = new Texture("pattern.png");
 		text2 = new Texture("pattern2.png");
 		dotclear = new Texture("dot_clear.png");
+		red_unit = new Texture(Gdx.files.internal("red_unit.png"));
+		power_green = new Texture(Gdx.files.internal("power_green.png"));
+		power_orange = new Texture(Gdx.files.internal("power_orange.png"));
+		power_pink = new Texture(Gdx.files.internal("power_pink.png"));
+		power_blue = new Texture(Gdx.files.internal("power_blue.png"));
+		
 		
 		down_left_right_up = new Texture("tiles/down_left_right_up.png");
 		down_left_right = new Texture("tiles/down_left_right.png");

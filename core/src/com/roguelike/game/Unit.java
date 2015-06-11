@@ -7,6 +7,7 @@ public class Unit implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = -759754524079076571L;
+	
 	int[] position;
 	int hp;
 	int ap;
@@ -16,10 +17,11 @@ public class Unit implements Serializable{
 		this.position[0] = 0;
 		this.position[1] = 0;
 		this.hp = 100;
-		this.ap = 10;	
+		this.ap = 5;
 	}
 	
 	public int getDistance(Unit u){
+		//TODO not finished
 		int x = (this.position[0] > u.position[0])? 
 				this.position[0]-u.position[0] : u.position[0]-this.position[0];
 		int y = (this.position[1] > u.position[1])? 
@@ -27,5 +29,8 @@ public class Unit implements Serializable{
 		//return h*h= (x*x + y*y);
 				return 0;
 	}
+	
+
+	public boolean onTouch(Unit u){return false;}
 	
 }

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -16,6 +17,7 @@ public class Level implements Serializable{
 	Place[][] map;
 	int[] entry;
 	int[] exit;
+	LinkedList<Enemy> enemys;
 	
 	static Random random = new Random();
 	
@@ -26,7 +28,8 @@ public class Level implements Serializable{
 		this.map = new Place[size][size];
 		for(int i=0; i<size; i++)
 			for(int j=0; j<size; j++)
-				map[i][j] = new Place(i,j);
+				map[i][j] = new Place(this,i,j);
+		enemys = new LinkedList<Enemy>();
 	}
 	public Level(int w, int h){
 		entry = new int[2];
@@ -35,9 +38,10 @@ public class Level implements Serializable{
 		for(int i=0; i<w; i++){
 			for(int j=0; j<h; j++){
 				
-				map[i][j] = new Place(i,j);
+				map[i][j] = new Place(this,i,j);
 			}
 		}
+		enemys = new LinkedList<Enemy>();
 	}
 	
 	public static Level randomLevel(){
@@ -48,7 +52,7 @@ public class Level implements Serializable{
 		lv.exit[1] = random.nextInt(14);
 		
 		Place current = lv.map[lv.entry[0]][lv.entry[1]];
-		current.visible = true;
+		current.visible = false;
 		
 		Stack<Place> s = new Stack<Place>();
 		
@@ -57,22 +61,37 @@ public class Level implements Serializable{
 			if(unvisited != null){
 				s.push(current);
 				current = unvisited;
-				current.visible=true;
+				current.visible=false;
 				continue;
 			} else if(!s.isEmpty()){
-				//add potions-----
+				//add extra passages
 				int c = random.nextInt(100);
 				if(c<10){
-					current.obj.add(new Potion());
+					lv.linkRandom(current);
+				}
+				//add potions-----
+				c = random.nextInt(100);
+				if(c<10){
+					current.obj.add(new Potion(current));
+				}
+				if(c>88 && c<90)
+					current.obj.add(new PUcloak(current));
+				if(c>95){
+					current.obj.add(new PUvision(current));
+				}
+				if(c>90 && c<=95){
+					Enemy e = new Enemy(lv,current);
+					lv.enemys.add(e);
+					//current.units.add(e);
 				}
 				//---------------
 				current = s.pop();
 			} else{
 				for(int i=0; i<15; i++){
 					for(int j=0; j<15; j++){
-						if(!lv.map[i][j].visible){
+						if(lv.map[i][j].visible){
 							current = lv.map[i][j];
-							current.visible = true;
+							current.visible = false;
 							continue;
 						}
 					}
@@ -83,110 +102,122 @@ public class Level implements Serializable{
 		return lv;
 	}
 	
+	public boolean linkRandom(Place p){
+		int i = random.nextInt(3);
+		
+		for(int a = 0; a<4; a++, i=(i+1) % 4){
+			if(p.links[i]==null){
+				if(linkPlace(p, i))
+					return true;
+			}
+		}
+		return false;
+	}
+	
 	public Place linkRandomUnvisited(Place p){
 		boolean r1 = random.nextBoolean();
 		boolean r2 = random.nextBoolean();
 		
 		Place c;
 		if(r1 && r2){
-			c =getPlace(p,Game.DOWN);
-			if(c!=null && !c.visible){
+			c =getPlaceAtDir(p,CoreGame.DOWN);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, true,false,false,false);
 				Level.linkTile(c, this, false,false,false,true);
-				return p.links[Game.DOWN];
+				return p.links[CoreGame.DOWN];
 			}
-			c=getPlace(p,Game.LEFT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.LEFT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,true,false,false);
 				Level.linkTile(c, this, false,false,true,false);
-				return p.links[Game.LEFT];
+				return p.links[CoreGame.LEFT];
 			}
-			c=getPlace(p,Game.RIGHT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.RIGHT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,true,false);
 				Level.linkTile(c, this, false,true,false,false);
-				return p.links[Game.RIGHT];
+				return p.links[CoreGame.RIGHT];
 			}
-			c=getPlace(p,Game.UP);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.UP);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,false,true);
 				Level.linkTile(c, this, true,false,false,false);
-				return p.links[Game.UP];
+				return p.links[CoreGame.UP];
 			}
 		} else 		if(r1){
-			c=getPlace(p,Game.UP);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.UP);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,false,true);
 				Level.linkTile(c, this, true,false,false,false);
-				return p.links[Game.UP];
+				return p.links[CoreGame.UP];
 			}
-			c=getPlace(p,Game.RIGHT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.RIGHT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,true,false);
 				Level.linkTile(c, this, false,true,false,false);
-				return p.links[Game.RIGHT];
+				return p.links[CoreGame.RIGHT];
 			}
-			c=getPlace(p,Game.LEFT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.LEFT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,true,false,false);
 				Level.linkTile(c, this, false,false,true,false);
-				return p.links[Game.LEFT];
+				return p.links[CoreGame.LEFT];
 			}
-			c =getPlace(p,Game.DOWN);
-			if(c!=null && !c.visible){
+			c =getPlaceAtDir(p,CoreGame.DOWN);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, true,false,false,false);
 				Level.linkTile(c, this, false,false,false,true);
-				return p.links[Game.DOWN];
+				return p.links[CoreGame.DOWN];
 			}
 		} else 		if(r2){
-			c=getPlace(p,Game.LEFT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.LEFT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,true,false,false);
 				Level.linkTile(c, this, false,false,true,false);
-				return p.links[Game.LEFT];
+				return p.links[CoreGame.LEFT];
 			}
-			c=getPlace(p,Game.UP);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.UP);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,false,true);
 				Level.linkTile(c, this, true,false,false,false);
-				return p.links[Game.UP];
+				return p.links[CoreGame.UP];
 			}
-			c =getPlace(p,Game.DOWN);
-			if(c!=null && !c.visible){
+			c =getPlaceAtDir(p,CoreGame.DOWN);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, true,false,false,false);
 				Level.linkTile(c, this, false,false,false,true);
-				return p.links[Game.DOWN];
+				return p.links[CoreGame.DOWN];
 			}
-			c=getPlace(p,Game.RIGHT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.RIGHT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,true,false);
 				Level.linkTile(c, this, false,true,false,false);
-				return p.links[Game.RIGHT];
+				return p.links[CoreGame.RIGHT];
 			}
 		} else 		if(true){
-			c=getPlace(p,Game.RIGHT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.RIGHT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,true,false);
 				Level.linkTile(c, this, false,true,false,false);
-				return p.links[Game.RIGHT];
+				return p.links[CoreGame.RIGHT];
 			}
-			c =getPlace(p,Game.DOWN);
-			if(c!=null && !c.visible){
+			c =getPlaceAtDir(p,CoreGame.DOWN);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, true,false,false,false);
 				Level.linkTile(c, this, false,false,false,true);
-				return p.links[Game.DOWN];
+				return p.links[CoreGame.DOWN];
 			}
-			c=getPlace(p,Game.UP);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.UP);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,false,false,true);
 				Level.linkTile(c, this, true,false,false,false);
-				return p.links[Game.UP];
+				return p.links[CoreGame.UP];
 			}
-			c=getPlace(p,Game.LEFT);
-			if(c!=null && !c.visible){
+			c=getPlaceAtDir(p,CoreGame.LEFT);
+			if(c!=null && c.visible){
 				Level.linkTile(p, this, false,true,false,false);
 				Level.linkTile(c, this, false,false,true,false);
-				return p.links[Game.LEFT];
+				return p.links[CoreGame.LEFT];
 			}
 		}
 
@@ -194,19 +225,26 @@ public class Level implements Serializable{
 		return null;
 	}
 	
-	public Place getPlace(Place p, int cod){
-		if(cod ==Game.DOWN && (p.position[1]-1)>=0)
+	public Place getPlace(int[] p){
+		return map[p[0]][p[1]];
+	}
+	public Place getPlace(int a, int b){
+		return map[a][b];
+	}
+	
+	public Place getPlaceAtDir(Place p, int cod){
+		if(cod ==CoreGame.DOWN && (p.position[1]-1)>=0)
 			return map[p.position[0]][p.position[1]-1];
-		if(cod ==Game.LEFT && (p.position[0]-1)>=0)
+		if(cod ==CoreGame.LEFT && (p.position[0]-1)>=0)
 			return map[p.position[0]-1][p.position[1]];
-		if(cod ==Game.RIGHT && (p.position[0]+1)<map.length)//TODO altura pode ser diferente da largura?
+		if(cod ==CoreGame.RIGHT && (p.position[0]+1)<map.length)//TODO altura pode ser diferente da largura?
 			return map[p.position[0]+1][p.position[1]];
-		if(cod ==Game.UP && (p.position[1]+1)<map.length)
+		if(cod ==CoreGame.UP && (p.position[1]+1)<map.length)
 			return map[p.position[0]][p.position[1]+1];
 		return null;
 	}
 	
-	public Level importLevel(Game game, String name) throws IOException { //TODO make static?
+	public static Level importLevel(CoreGame game, String name) throws IOException { //TODO make static?
 		
 		BufferedReader reader = new BufferedReader(new FileReader(name));
 		String line = reader.readLine();
@@ -241,7 +279,6 @@ public class Level implements Serializable{
 				//int id = Integer.parseInt(token);
 	
 				Place tile = lv.map[coluna][linha];
-				tile.visible = true;
 				
 				if(token.equals("0")){
 	
@@ -276,7 +313,7 @@ public class Level implements Serializable{
 				}else if(token.equals("^")){
 					Level.linkTile(tile, lv, false, false, false, true);
 				}else
-					tile = new Place();	//TODO error handling
+					tile = new Place(lv);	//TODO error handling
 				//tile.setId(id);
 				
 			}
@@ -289,17 +326,34 @@ public class Level implements Serializable{
 	
 	public static void linkTile(Place tile, Level lv, boolean a, boolean b, boolean c, boolean d){
 		if(a)
-			tile.links[Game.DOWN]=lv.map[tile.position[0]][tile.position[1]-1];
+			tile.links[CoreGame.DOWN]=lv.map[tile.position[0]][tile.position[1]-1];
 		if(b)
-			tile.links[Game.LEFT]=lv.map[tile.position[0]-1][tile.position[1]];
+			tile.links[CoreGame.LEFT]=lv.map[tile.position[0]-1][tile.position[1]];
 		if(c)
-			tile.links[Game.RIGHT]=lv.map[tile.position[0]+1][tile.position[1]];
+			tile.links[CoreGame.RIGHT]=lv.map[tile.position[0]+1][tile.position[1]];
 		if(d)
-			tile.links[Game.UP]=lv.map[tile.position[0]][tile.position[1]+1];
+			tile.links[CoreGame.UP]=lv.map[tile.position[0]][tile.position[1]+1];
 	}
 	
-	public static void linkPlaces(Place a, Place b){
-		
+	public boolean linkPlace(Place p, int cod){
+		Place c;
+		c = getPlaceAtDir(p, cod);
+		if(c == null)
+			return false;
+		if(cod == 0){
+			p.links[CoreGame.DOWN]=c;
+			c.links[CoreGame.UP]=p;
+		} else if(cod == 1){
+			p.links[CoreGame.LEFT]=c;
+			c.links[CoreGame.RIGHT]=p;
+		}else if(cod == 2){
+			p.links[CoreGame.RIGHT]=c;
+			c.links[CoreGame.LEFT]=p;
+		}else if(cod == 3){
+			p.links[CoreGame.UP]=c;
+			c.links[CoreGame.DOWN]=p;
+		}
+		return true;
 	}
 	
 }
